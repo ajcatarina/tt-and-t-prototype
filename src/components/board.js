@@ -98,8 +98,8 @@ export default class Board extends React.Component {
           {this.state.chips[8].chip}
         </p>
 
-        <h4>Player 1</h4>
-        <h4>Player 2</h4>
+        <h4>Player 1:</h4>
+        <h4>Player 2:</h4>
       </div>
     );
   }

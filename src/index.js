@@ -7,7 +7,7 @@ import "./styles.css";
 
 const App = () => (
   <div className="App">
-    <h1>Tic Tacs & Toes</h1>
+    <h1>SAP</h1>
     <Main />
   </div>
 );

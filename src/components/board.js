@@ -15,7 +15,9 @@ export default class Board extends React.Component {
       { chip: "", owner: "", disabled: false },
       { chip: "", owner: "", disabled: false },
       { chip: "", owner: "", disabled: false }
-    ]
+    ],
+    firstPlayer: { chipCount: null },
+    secondPlayer: { chipCount: null }
   };
 
   componentDidMount() {
@@ -37,7 +39,9 @@ export default class Board extends React.Component {
         { chip: "", owner: "", disabled: false },
         { chip: "", owner: "", disabled: false },
         { chip: "", owner: "", disabled: false }
-      ]
+      ],
+      firstPlayer: { chipCount: null },
+      secondPlayer: { chipCount: null }
     });
 
     //set chip count
@@ -99,19 +103,62 @@ export default class Board extends React.Component {
   };
 
   _onChipClick = e => {
-    let index = e.target.id,
-      chips = this.state.chips;
+    let chips = this.state.chips;
+    const currentChip = e.target.innerHTML,
+      index = e.target.id,
+      currentUser = this.state.firstPlayerActive ? 1 : 2,
+      previousChip = this.state.chips.find(chip => chip.owner === currentUser);
+
+    if (previousChip) {
+      if (previousChip.chip !== currentChip) {
+        //call reset user chips & chipcount
+        this._resetOwnedChips(currentUser);
+        this.setState({
+          firstPlayerActive: !this.state.firstPlayerActive
+        });
+        return;
+      }
+    }
 
     chips[index].disabled = true;
-    chips[index].owner = this.state.firstPlayerActive ? 1 : 2;
+    chips[index].owner = currentUser;
 
     this.setState({
       firstPlayerActive: !this.state.firstPlayerActive,
       chips: chips
     });
+
+    this._countOwnedChips(chips[index].owner);
   };
 
-  _resetOwnedChips = () => {};
+  _resetOwnedChips = user => {
+    //create local copy of array
+    //set to state array
+    let chips = this.state.chips;
+
+    chips.forEach(
+      chip =>
+        chip.owner === user ? ((chip.owner = ""), (chip.disabled = false)) : ""
+    );
+    this.setState({ chips: chips });
+  };
+
+  _countOwnedChips = user => {
+    const count = this.state.chips.filter(chip => chip.owner === user).length;
+
+    const userUpdate =
+      user === 1
+        ? { firstPlayer: { chipCount: count } }
+        : { secondPlayer: { chipCount: count } };
+
+    this.setState(userUpdate, () => {
+      if (count === 4) {
+        //modal appears
+        alert(`Player ${user} wins`);
+        //disable all
+      }
+    });
+  };
 
   render() {
     return (
@@ -233,8 +280,14 @@ export default class Board extends React.Component {
           </button>
         </div>
 
-        <h4>Player 1: {this.state.firstPlayerActive ? "Active" : ""}</h4>
-        <h4>Player 2: {this.state.firstPlayerActive ? "" : "Active"}</h4>
+        <h4 style={{ color: this.state.firstPlayerActive ? "green" : "black" }}>
+          Player 1: {this.state.firstPlayer.chipCount}
+        </h4>
+        <h4
+          style={{ color: !this.state.firstPlayerActive ? "green" : "black" }}
+        >
+          Player 2: {this.state.secondPlayer.chipCount}
+        </h4>
       </div>
     );
   }

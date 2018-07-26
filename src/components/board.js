@@ -1,5 +1,7 @@
 import React from "react";
 
+import PlayerStatus from "./player-status";
+
 export default class Board extends React.Component {
   state = {
     firstPlayerActive: true,
@@ -106,13 +108,15 @@ export default class Board extends React.Component {
     let chips = this.state.chips;
     const currentChip = e.target.innerHTML,
       index = e.target.id,
-      currentUser = this.state.firstPlayerActive ? 1 : 2,
-      previousChip = this.state.chips.find(chip => chip.owner === currentUser);
+      currentPlayer = this.state.firstPlayerActive ? 1 : 2,
+      previousChip = this.state.chips.find(
+        chip => chip.owner === currentPlayer
+      );
 
     if (previousChip) {
       if (previousChip.chip !== currentChip) {
-        //call reset user chips & chipcount
-        this._resetOwnedChips(currentUser);
+        //call reset player chips & chipcount
+        this._resetOwnedChips(currentPlayer);
         this.setState({
           firstPlayerActive: !this.state.firstPlayerActive
         });
@@ -121,46 +125,76 @@ export default class Board extends React.Component {
     }
 
     chips[index].disabled = true;
-    chips[index].owner = currentUser;
+    chips[index].owner = currentPlayer;
 
     this.setState({
-      firstPlayerActive: !this.state.firstPlayerActive,
       chips: chips
     });
 
     this._countOwnedChips(chips[index].owner);
+    this._checkWin();
   };
 
-  _resetOwnedChips = user => {
+  _resetOwnedChips = player => {
     //create local copy of array
     //set to state array
     let chips = this.state.chips;
 
     chips.forEach(
       chip =>
-        chip.owner === user ? ((chip.owner = ""), (chip.disabled = false)) : ""
+        chip.owner === player
+          ? ((chip.owner = ""), (chip.disabled = false))
+          : ""
     );
     this.setState({ chips: chips });
   };
 
-  _countOwnedChips = user => {
-    const count = this.state.chips.filter(chip => chip.owner === user).length;
+  _countOwnedChips = player => {
+    const count = this.state.chips.filter(chip => chip.owner === player).length;
 
-    const userUpdate =
-      user === 1
+    const playerUpdate =
+      player === 1
         ? { firstPlayer: { chipCount: count } }
         : { secondPlayer: { chipCount: count } };
 
-    this.setState(userUpdate, () => {
-      if (count === 4) {
-        //modal appears
-        alert(`Player ${user} wins`);
-        //disable all
-      }
-    });
+    this.setState(playerUpdate);
+  };
+
+  _checkWin = () => {
+    const currentPlayer = this.state.firstPlayerActive ? 1 : 2;
+    const count = this.state.chips.filter(chip => chip.owner === currentPlayer)
+      .length;
+    //disable all
+    if (count === 4) {
+      this._disableAllChips();
+    } else {
+      this.setState({
+        firstPlayerActive: !this.state.firstPlayerActive
+      });
+    }
+  };
+
+  _disableAllChips = () => {
+    let chips = this.state.chips;
+
+    chips.forEach(
+      chip => (chip.disabled === false ? (chip.disabled = true) : "")
+    );
+    this.setState({ chips: chips });
   };
 
   render() {
+    const {
+      firstPlayerActive,
+      ticTacs,
+      toes,
+      chips,
+      firstPlayer,
+      secondPlayer
+    } = this.state;
+
+    const defaultC = "transparent";
+
     return (
       <div>
         <button onClick={this._resetGame}>Reset</button>
@@ -168,126 +202,128 @@ export default class Board extends React.Component {
         <div>
           <button
             style={
-              this.state.chips[0].owner
-                ? { color: this.state.chips[0].owner === 1 ? "red" : "blue" }
-                : {}
+              chips[0].owner
+                ? { color: chips[0].owner === 1 ? "red" : "blue" }
+                : { color: defaultC }
             }
             id={0}
-            disabled={this.state.chips[0].disabled}
+            disabled={chips[0].disabled}
             onClick={e => this._onChipClick(e)}
           >
-            {this.state.chips[0].chip}
+            {chips[0].chip}
           </button>|
           <button
             style={
-              this.state.chips[1].owner
-                ? { color: this.state.chips[1].owner === 1 ? "red" : "blue" }
-                : {}
+              chips[1].owner
+                ? { color: chips[1].owner === 1 ? "red" : "blue" }
+                : { color: defaultC }
             }
             id={1}
-            disabled={this.state.chips[1].disabled}
+            disabled={chips[1].disabled}
             onClick={e => this._onChipClick(e)}
           >
-            {this.state.chips[1].chip}
+            {chips[1].chip}
           </button>|
           <button
             style={
-              this.state.chips[2].owner
-                ? { color: this.state.chips[2].owner === 1 ? "red" : "blue" }
-                : {}
+              chips[2].owner
+                ? { color: chips[2].owner === 1 ? "red" : "blue" }
+                : { color: defaultC }
             }
             id={2}
-            disabled={this.state.chips[2].disabled}
+            disabled={chips[2].disabled}
             onClick={e => this._onChipClick(e)}
           >
-            {this.state.chips[2].chip}
+            {chips[2].chip}
           </button>
         </div>
         <div>
           <button
             style={
-              this.state.chips[3].owner
-                ? { color: this.state.chips[3].owner === 1 ? "red" : "blue" }
-                : {}
+              chips[3].owner
+                ? { color: chips[3].owner === 1 ? "red" : "blue" }
+                : { color: defaultC }
             }
             id={3}
-            disabled={this.state.chips[3].disabled}
+            disabled={chips[3].disabled}
             onClick={e => this._onChipClick(e)}
           >
-            {this.state.chips[3].chip}
+            {chips[3].chip}
           </button>|
           <button
             style={
-              this.state.chips[4].owner
-                ? { color: this.state.chips[4].owner === 1 ? "red" : "blue" }
-                : {}
+              chips[4].owner
+                ? { color: chips[4].owner === 1 ? "red" : "blue" }
+                : { color: defaultC }
             }
             id={4}
-            disabled={this.state.chips[4].disabled}
+            disabled={chips[4].disabled}
             onClick={e => this._onChipClick(e)}
           >
-            {this.state.chips[4].chip}
+            {chips[4].chip}
           </button>|
           <button
             style={
-              this.state.chips[5].owner
-                ? { color: this.state.chips[5].owner === 1 ? "red" : "blue" }
-                : {}
+              chips[5].owner
+                ? { color: chips[5].owner === 1 ? "red" : "blue" }
+                : { color: defaultC }
             }
             id={5}
-            disabled={this.state.chips[5].disabled}
+            disabled={chips[5].disabled}
             onClick={e => this._onChipClick(e)}
           >
-            {this.state.chips[5].chip}
+            {chips[5].chip}
           </button>
         </div>
         <div>
           <button
             style={
-              this.state.chips[6].owner
-                ? { color: this.state.chips[6].owner === 1 ? "red" : "blue" }
-                : {}
+              chips[6].owner
+                ? { color: chips[6].owner === 1 ? "red" : "blue" }
+                : { color: defaultC }
             }
             id={6}
-            disabled={this.state.chips[6].disabled}
+            disabled={chips[6].disabled}
             onClick={e => this._onChipClick(e)}
           >
-            {this.state.chips[6].chip}
+            {chips[6].chip}
           </button>|
           <button
             style={
-              this.state.chips[7].owner
-                ? { color: this.state.chips[7].owner === 1 ? "red" : "blue" }
-                : {}
+              chips[7].owner
+                ? { color: chips[7].owner === 1 ? "red" : "blue" }
+                : { color: defaultC }
             }
             id={7}
-            disabled={this.state.chips[7].disabled}
+            disabled={chips[7].disabled}
             onClick={e => this._onChipClick(e)}
           >
-            {this.state.chips[7].chip}
+            {chips[7].chip}
           </button>|
           <button
             style={
-              this.state.chips[8].owner
-                ? { color: this.state.chips[8].owner === 1 ? "red" : "blue" }
-                : {}
+              chips[8].owner
+                ? { color: chips[8].owner === 1 ? "red" : "blue" }
+                : { color: defaultC }
             }
             id={8}
-            disabled={this.state.chips[8].disabled}
+            disabled={chips[8].disabled}
             onClick={e => this._onChipClick(e)}
           >
-            {this.state.chips[8].chip}
+            {chips[8].chip}
           </button>
         </div>
 
-        <h4 style={{ color: this.state.firstPlayerActive ? "green" : "black" }}>
-          Player 1: {this.state.firstPlayer.chipCount}
-        </h4>
-        <h4
-          style={{ color: !this.state.firstPlayerActive ? "green" : "black" }}
-        >
-          Player 2: {this.state.secondPlayer.chipCount}
-        </h4>
+        <PlayerStatus
+          name="Player 1"
+          chipCount={firstPlayer.chipCount}
+          active={firstPlayerActive ? true : false}
+        />
+        <PlayerStatus
+          name="Player 2"
+          chipCount={secondPlayer.chipCount}
+          active={!firstPlayerActive ? true : false}
+        />
       </div>
     );
   }
